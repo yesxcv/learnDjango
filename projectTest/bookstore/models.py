@@ -1,5 +1,7 @@
 # models.py
 from django.db import models
+from django import forms
+from django.forms import  ModelForm
 
 
 class Publisher(models.Model):
@@ -31,3 +33,22 @@ class Book(models.Model):
     authors = models.ManyToManyField("Author")
     publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE)
     publication_date = models.DateField()
+
+class ContactForm(forms.Form):
+    name = forms.CharField()
+    message = forms.CharField(widget = forms.Textarea)
+    def send_email(self):
+        pass
+
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=100)
+    file = forms.FileField()
+
+class UploadFileModel(models.Model):
+    file = models.FileField(upload_to="upload/")
+    title =models.CharField(max_length=123)
+
+class UploadFileModelField(ModelForm):
+    class Meta:
+        model = UploadFileModel
+        fields = ['title','file']
