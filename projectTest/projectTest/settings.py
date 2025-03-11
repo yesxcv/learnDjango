@@ -40,8 +40,12 @@ INSTALLED_APPS = [
     "polls",
     "blog",
     "bookstore",
-    "permissionLearn"
+    "permissionLearn",
+    "rest_framework",
+    "drfLearn"
 ]
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -114,6 +118,13 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+LANGUAGES = [
+    ('en', 'English'),
+    ('zh-hans', 'Simplified Chinese'),  # 可按需添加其他语言
+]
+
+
 
 
 # Static files (CSS, JavaScript, Images)
