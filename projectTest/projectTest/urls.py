@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("",include('bookstore.urls')),
     path("",include("permissionLearn.urls")),
-    path("v1/",include("drfLearn.urls"))
+    path("v1/",include("drfLearn.urls")),
+    path("api-auth/",include("rest_framework.urls"))
 ]

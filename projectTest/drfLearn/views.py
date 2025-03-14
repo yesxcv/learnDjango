@@ -1,4 +1,8 @@
+import json
+from lib2to3.fixes.fix_input import context
+
 from django.shortcuts import render
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 
 # Create your views here.
@@ -53,10 +57,57 @@ from rest_framework.response import Response
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
 from rest_framework.views import APIView
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from .models import Article
-from .serializers import ArticleSerializer
+from .serializers import ArticleSerializer, UserSerializer
 from rest_framework import status
+from django.contrib.auth import authenticate, login
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
+from django.contrib.auth.models import User
+from rest_framework.views import APIView
+from rest_framework import permissions
+
+
+
+
+class UserArticleViews(APIView):
+    # authentication_classes = [TokenAuthentication]
+    def get(self,request):
+        print(request.user)
+        if request.user.is_authenticated:
+            context = {'request':request}
+            serializer = UserSerializer(request.user,context=context)
+            return Response(serializer.data)
+        else:
+            return Response("user not authenticated")
+
+
+
+def login_django_default(request):
+    if request.method == "POST":
+        paramsData = json.loads(request.body)
+        username = paramsData.get("username")
+        password = paramsData.get("password")
+        user = authenticate(username=username,password=password)
+        if user:
+            login(request,user)
+            return JsonResponse({"status":"success","msg":"logged"})
+        else:
+            return  JsonResponse({"status":"faild"},status=400)
+    return JsonResponse({'status':"error","message":"Method not allowed"},status=400)
+
+
+@api_view(["POST"])
+def login_api(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    user = authenticate(username=username,password=password)
+    if user:
+        token,created = Token.objects.get_or_create(user = user)
+        return Response({'token':token.key})
+    else:
+        return Response({"error":"inv"},status=400)
 
 #
 # class ArticleList(APIView):
@@ -98,13 +149,23 @@ from rest_framework import status
 #         return  Response(status=status.HTTP_204_NO_CONTENT)
 
 from rest_framework import  generics
+from drfLearn.permissions import IsOwnerOrReadOnly
+from drfLearn.authentication import ExampleAuthentication
 class ArticleList(generics.ListCreateAPIView):
     queryset = Article.objects.all()
-    serializer_class = ArticleSerializer
+    # serializer_class = ArticleSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        return  ArticleSerializer
 
     def perform_create(self, serializer):
+        print(self.request.user)
         serializer.save(author=self.request.user)
 
 class ArticleDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
+    authentication_classes = (ExampleAuthentication,)
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
