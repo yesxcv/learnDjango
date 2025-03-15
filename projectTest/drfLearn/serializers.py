@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from drfLearn.models import Article
 from django.contrib.auth import  get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -56,3 +57,10 @@ class ArticleSerializer(serializers.ModelSerializer):
             return "草稿"
         else:
             return "未知"
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls,user):
+        token = super().get_token(user)
+        token['username'] = user.username
+        return token

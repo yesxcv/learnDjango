@@ -151,11 +151,13 @@ def login_api(request):
 from rest_framework import  generics
 from drfLearn.permissions import IsOwnerOrReadOnly
 from drfLearn.authentication import ExampleAuthentication
+from drfLearn.pagination import MypageNumberPagination
 class ArticleList(generics.ListCreateAPIView):
     queryset = Article.objects.all()
     # serializer_class = ArticleSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    pagination_class = MypageNumberPagination
 
     def get_serializer_class(self):
         return  ArticleSerializer
@@ -163,9 +165,17 @@ class ArticleList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         print(self.request.user)
         serializer.save(author=self.request.user)
-
+from rest_framework.permissions import IsAuthenticated
 class ArticleDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    authentication_classes = (ExampleAuthentication,)
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+    # authentication_classes = (ExampleAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import AllowAny
+from .serializers import MyTokenObtainPairSerializer
+
+class MyObtainTokenPairView(TokenObtainPairView):
+    permission_classes = (AllowAny,)
+    serializer_class = MyTokenObtainPairSerializer
